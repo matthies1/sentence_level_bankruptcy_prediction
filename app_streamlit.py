@@ -120,7 +120,9 @@ if button:
         st.warning('No sentences found.')
     else:
         try:
+            print("Search")
             nltk.data.find('tokenizers/punkt')
+            print("Found")
         except LookupError:
             nltk.download('punkt')
 
