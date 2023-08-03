@@ -128,19 +128,24 @@ if button:
         sentences = nltk.tokenize.sent_tokenize(input_box)
 
         # Tokenize sentences using Hugging Face's tokenizer
-        encoded_sentences = tokenizer(sentences, padding='max_length', truncation=True, max_length=128)
+        encoded_sentences = []
+        for sentence in sentences:
+            encoded_sentences.append(tokenizer(sentence, padding='max_length', truncation=True, max_length=128))
 
         # Get embeddings
         bert_model.eval()
+        torch_embeddings = torch.Tensor()
         with torch.no_grad():
-            output = bert_model(torch.LongTensor(encoded_sentences['input_ids']),
-                                attention_mask=torch.LongTensor(encoded_sentences['attention_mask']),
-                                output_attentions=False, output_hidden_states=True)
-            embeddings = output['hidden_states'][12][:, 0, :]
+            for encoded_sentence in encoded_sentences:
+                output = bert_model(torch.reshape(torch.LongTensor(encoded_sentence['input_ids']), (1, -1)),
+                                    attention_mask=torch.reshape(torch.LongTensor(encoded_sentence['attention_mask']), (1, -1)),
+                                    output_attentions=False, output_hidden_states=True)
+                embeddings = output['hidden_states'][12][:, 0, :]
+                torch_embeddings = torch.concat([torch_embeddings, embeddings], dim=0)
 
         # Raw predictions
         model.eval()
-        pred = np.round(model(embeddings).detach().numpy(), 2)
+        pred = model(torch_embeddings).detach().numpy()
 
         # Filter sentences based on slider value
         filtered_pred = [pred[i, 1] for i in range(len(sentences)) if pred[i, 1] >= slider_value]
