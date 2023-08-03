@@ -122,7 +122,7 @@ if button:
     else:
 
         if not b_nltk_download:
-            nltk.data.find('tokenizers/punkt')
+            nltk.download('punkt')
             b_nltk_download = True
 
         # Split text into sentences
