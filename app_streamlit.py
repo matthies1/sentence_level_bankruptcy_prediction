@@ -7,7 +7,6 @@ from transformers import AutoTokenizer, DefaultDataCollator, BertForPreTraining
 
 from src.utilities import clean_output_text
 
-nltk.download('punkt')
 tokenizer = AutoTokenizer.from_pretrained("nlpaueb/sec-bert-base")
 data_collator = DefaultDataCollator(return_tensors="pt")
 bert_model = BertForPreTraining.from_pretrained("nlpaueb/sec-bert-base")
@@ -120,6 +119,11 @@ if button:
     if not input_box:
         st.warning('No sentences found.')
     else:
+        try:
+            nltk.data.find('tokenizers/punkt')
+        except LookupError:
+            nltk.download('punkt')
+
         # Split text into sentences
         sentences = nltk.tokenize.sent_tokenize(input_box)
 
